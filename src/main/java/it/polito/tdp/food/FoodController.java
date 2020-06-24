@@ -5,8 +5,10 @@
 package it.polito.tdp.food;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.food.model.Model;
+import it.polito.tdp.food.model.NearPortion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -40,7 +42,7 @@ public class FoodController {
     private Button btnCammino; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxPorzioni"
-    private ComboBox<?> boxPorzioni; // Value injected by FXMLLoader
+    private ComboBox<String> boxPorzioni; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -48,20 +50,65 @@ public class FoodController {
     @FXML
     void doCammino(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco cammino peso massimo...");
+    	String porzione=this.boxPorzioni.getValue();
+    	String nPassi=this.txtPassi.getText();
+    	
+    	Integer passi;
+    	
+    	try {
+    		passi=Integer.parseInt(nPassi);
+    	}catch(NumberFormatException e) {
+    		
+    		txtResult.setText("Devi inserire solo numeri");
+    		return ;
+    	}
+    	
+    	this.model.cammino(passi, porzione);
+    	
+    	txtResult.appendText("Il cammino trovato per la "+porzione+" con passi "+ passi+" ha peso: "+model.getBestPeso()+"\n");
+    	
+    	List<String> cammino=model.getBestCammino();
+    	for(String c: cammino) {
+    		txtResult.appendText(c+"\n");
+    	}
     }
 
     @FXML
     void doCorrelate(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco porzioni correlate...");
+    	
+    	String porzione=this.boxPorzioni.getValue();
+    	
+    	List<NearPortion> result=this.model.getPorzioniCorrelate(porzione);
+    	
+    	txtResult.appendText("La porzione "+porzione+" è direttamente connessa: \n");
+    	for(NearPortion p: result) {
+    		txtResult.appendText(p.getP()+"  "+p.getPeso()+"\n");
+    	}
     	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	String calorieS=this.txtCalorie.getText();
+    	
+    	Integer calorie;
+    	
+    	try {
+    		calorie=Integer.parseInt(calorieS);
+    	}catch(NumberFormatException e) {
+    		
+    		txtResult.setText("Devi inserire solo numeri");
+    		return ;
+    	}
+    	
+    	this.model.creaGrafo(calorie);
+
+    	this.boxPorzioni.getItems().addAll(this.model.Vertici());
+    	
+    	txtResult.appendText("GRAFO CREATO CON "+ model.nVertici()+" VERTICI "+ model.nArchi()+" ARCHI\n" );
+    	
     	
     }
 

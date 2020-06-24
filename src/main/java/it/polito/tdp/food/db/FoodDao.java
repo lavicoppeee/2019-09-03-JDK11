@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.polito.tdp.food.model.Arco;
 import it.polito.tdp.food.model.Condiment;
 import it.polito.tdp.food.model.Food;
 import it.polito.tdp.food.model.Portion;
@@ -107,6 +109,73 @@ public class FoodDao {
 			return null ;
 		}
 
+	}
+	
+	//VERTICI
+	
+	public List<String> getVertici(int calorie){
+		String sql=" SELECT DISTINCT p.portion_display_name as name " + 
+				"FROM portion as p " + 
+				"WHERE p.calories< ? " + 
+				"ORDER BY p.portion_display_name ASC ";
+		
+		List<String> vertici=new ArrayList<>();
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, calorie);
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				try {
+					vertici.add(res.getString("name"));
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			
+			conn.close();
+			return vertici;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+		
+				
+	
+	}
+
+	public List<Arco> getArchi() {
+		String sql=" SELECT DISTINCT p1.portion_display_name as p1, p2.portion_display_name as p2, COUNT(DISTINCT p1.food_code) as peso " + 
+				"FROM portion as p1, portion as p2 " + 
+				"WHERE p1.food_code=p2.food_code and p1.portion_id<>p2.portion_id " + 
+				"GROUP BY p1.portion_display_name, p2.portion_display_name ";
+		
+		List<Arco> vertici=new ArrayList<>();
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+		
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				try {
+					vertici.add(new Arco(res.getString("p1"),res.getString("p2"), res.getInt("peso")));
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			
+			conn.close();
+			return vertici;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
 	}
 	
 	
